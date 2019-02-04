@@ -15,7 +15,20 @@ int main(void) {
 
     initLCD();
 
-    primes();
+    /* Part 1 */
+    //primes();
+    
+
+    /* Part 2 */
+    blink();
+
+
+    /* Part 3 */
+
+    //while (1) {
+    //    writeLong((long) getTCNT1());
+    //}
+
 
     return 0;
 }
