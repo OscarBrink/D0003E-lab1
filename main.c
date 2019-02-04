@@ -1,9 +1,16 @@
 #include "include/avr/io.h"
 #include <stdint.h>
 
+// Function Prototypes
 void initLCD(void);
-void writeChar(char ch, int pos);
-void mapLCDSegments(uint8_t *segmentMap, char ch);
+uint16_t writeChar(char ch, int pos);
+uint16_t mapLCDSegments(uint8_t *segmentMap, char ch);
+
+uint16_t writeLong(long i);
+
+uint16_t primes(void);
+uint16_t isPrime(long i);
+
 
 int main(void) {
 
@@ -14,78 +21,108 @@ int main(void) {
 
     initLCD();
 
-    // LCD Data Registers
-    // LCDDR1 = 0xff;
-
-//  LCDDR0 = 0x10;
-//  LCDDR5 = 0x55;
-//  LCDDR10 = 0xFF;
-//  LCDDR15 = 0x11;
-//
-//  LCDDR1 = 0x11;
-//  LCDDR6 = 0x55;
-//  LCDDR11 = 0xFF;
-//  LCDDR16 = 0x11;
-//
-//  LCDDR2 = 0x11;
-//  LCDDR7 = 0x55;
-//  LCDDR12 = 0xFF;
-//  LCDDR17 = 0x11;
-
-    writeChar('0', 0);
-    writeChar('6', 1);
-    writeChar('7', 2);
-
-    writeChar('a', 0);
-
-    writeChar('8', 3);
-    writeChar('9', 4);
-    writeChar('5', 5);
-
-    writeChar('8', 6);
+    primes();
 
     return 0;
 }
 
-void writeChar(char ch, int pos) {
+uint16_t primes(void) {
+
+    long p = 2;
+    while (1) {
+        if (isPrime(p)) {
+            writeLong(p);
+        }
+        p++;
+    }
+
+    return 0;
+}
+
+uint16_t isPrime(long i) {
+
+    if (i == 2) {
+        return 1;
+    }
+
+    for (long j = 2; j < (i >> 1); j++) {
+        if (i % j == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Write positive long
+uint16_t writeLong(long i) {
+
+    uint16_t pos = 5; // Write LSD first
+
+    if (i == 0) {
+        if (writeChar('0', pos)) {
+            return 1;
+        }
+    }
+    else {
+        for (; i > 0; i /= 10) {
+            if (writeChar('0' + i % 10, pos--)) {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+uint16_t writeChar(char ch, int pos) {
 
     if (pos > 5) {
-        return;
+        return 1;
     }
 
     if (ch < 48 || ch > 57) {
-        return;
+        return 1;
     }
     
     // Determine LCD-segments to activate
     uint8_t segmentMap[4];
-    mapLCDSegments(segmentMap, ch);
+    if (mapLCDSegments(segmentMap, ch)) { // Error check
+        return 1;
+    }
 
-    uint16_t offset = (pos & 1 == 1 ? 4 : 0);
+    uint16_t offset = ( (pos & 1) == 1 ? 4 : 0); // Odd numbers on upper nibble
 
+    /*
+     * Clear desired nibble and write value to it
+     */
     if (pos == 0 || pos == 1) {
-        LCDDR0  = LCDDR0  | (segmentMap[0] << offset);
-        LCDDR5  = LCDDR5  | (segmentMap[1] << offset);
-        LCDDR10 = LCDDR10 | (segmentMap[2] << offset);
-        LCDDR15 = LCDDR15 | (segmentMap[3] << offset);
+        LCDDR0  = ( LCDDR0  & (0xF0 >> offset) ) | (segmentMap[0] << offset);
+        LCDDR5  = ( LCDDR5  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
+        LCDDR10 = ( LCDDR10 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
+        LCDDR15 = ( LCDDR15 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
     }
     else if (pos == 2 || pos == 3) {
-        LCDDR1  = LCDDR1  | (segmentMap[0] << offset);
-        LCDDR6  = LCDDR6  | (segmentMap[1] << offset);
-        LCDDR11 = LCDDR11 | (segmentMap[2] << offset);
-        LCDDR16 = LCDDR16 | (segmentMap[3] << offset);
+        LCDDR1  = ( LCDDR1  & (0xF0 >> offset) ) | (segmentMap[0] << offset);
+        LCDDR6  = ( LCDDR6  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
+        LCDDR11 = ( LCDDR11 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
+        LCDDR16 = ( LCDDR16 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
     }
     else if (pos == 4 || pos == 5) {
-        LCDDR2  = LCDDR2  | (segmentMap[0] << offset);
-        LCDDR7  = LCDDR7  | (segmentMap[1] << offset);
-        LCDDR12 = LCDDR12 | (segmentMap[2] << offset);
-        LCDDR17 = LCDDR17 | (segmentMap[3] << offset);
+        LCDDR2  = ( LCDDR2  & (0xF0 >> offset) ) | (segmentMap[0] << offset);
+        LCDDR7  = ( LCDDR7  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
+        LCDDR12 = ( LCDDR12 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
+        LCDDR17 = ( LCDDR17 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
     }
+
+    return 0;
 
 }
 
-void mapLCDSegments(uint8_t *segmentMap, char ch) {
+uint16_t mapLCDSegments(uint8_t *segmentMap, char ch) {
 
+    /*
+     * Maps the ASCII-characters to the segments in the LCD.
+     */
     switch (ch) {
         case '0':
             segmentMap[0] = 0b1001;
@@ -148,8 +185,10 @@ void mapLCDSegments(uint8_t *segmentMap, char ch) {
             segmentMap[3] = 0b0001;
             break;
         default:
-            break;
+            // Err
+            return 1;
     }
+    return 0;
 }
 
 void initLCD(void) {
