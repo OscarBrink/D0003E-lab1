@@ -6,7 +6,10 @@
 
 // Function Prototypes
 void initLCD(void);
-void runAll(void);
+void runAll(uint16_t primeStart);
+void changeBlink(uint16_t *blink_state);
+void changeButton(uint8_t *button_state);
+
 
 int main(void) {
 
@@ -28,15 +31,16 @@ int main(void) {
     /* Part 3 */
     //button();
 
+
     /* Part 4 */
-    runAll();
+    //runAll(50000);
 
 
     return 0;
 }
 
 
-void runAll(void) {
+void runAll(uint16_t primeStart) {
 
     initClk();
     initIO();
@@ -47,25 +51,13 @@ void runAll(void) {
     uint8_t button_state = ( PINB & (1<<PINB7) ); // init button state
     LCDDR1 = 0x20; // init button event
 
-    long p = 2; // initial prime
+    long p = primeStart; // initial prime
 
     while (1) {
-        /* Check if time to change blink state */
-        if (!blink_state && TCNT1 >= 0x7FFF) {
-            LCDDR0 = (LCDDR0 & 0xBF);
-            blink_state = 1;
-        }
-        else if (blink_state && TCNT1 < 0x7FFF) {
-            LCDDR0 = (LCDDR0 & 0xFF) | 0x40;
-            blink_state = 0;
-        }
 
-        /* Check if input has happened */
-        uint16_t new_button_state = (PINB & (1<<PINB7));
-        if (button_state != new_button_state) {
-            button_state = new_button_state;
-            LCDDR1 = (LCDDR1 ^ 0x60);
-        }
+        changeBlink(&blink_state);
+
+        changeButton(&button_state);
 
         /* Check next number */
         if (isPrime(p)) {
@@ -75,6 +67,28 @@ void runAll(void) {
     }
 }
 
+
+/* Check if time to change blink state */
+void changeBlink(uint16_t *blink_state) {
+    if (!(*blink_state) && TCNT1 >= 0x7FFF) {
+        LCDDR0 = (LCDDR0 & 0xBF);
+        (*blink_state) = 1;
+    }
+    else if ((*blink_state) && TCNT1 < 0x7FFF) {
+        LCDDR0 = (LCDDR0 & 0xFF) | 0x40;
+        (*blink_state) = 0;
+    }
+}
+
+
+/* Check if input has happened */
+void changeButton(uint8_t *button_state) {
+    uint8_t new_button_state = (PINB & (1<<PINB7));
+    if ((*button_state) != new_button_state) {
+        (*button_state) = new_button_state;
+        LCDDR1 = (LCDDR1 ^ 0x60);
+    }
+}
 
 
 void initLCD(void) {
