@@ -70,19 +70,19 @@ uint16_t writeChar(char ch, int pos) {
      * Clear desired nibble and write value to it
      */
     if (pos == 0 || pos == 1) {
-        LCDDR0  = ( LCDDR0  & (0xF0 >> offset) ) | (segmentMap[0] << offset);
+        LCDDR0  = ( LCDDR0  & (0x6F6 >> offset) ) | (segmentMap[0] << offset);
         LCDDR5  = ( LCDDR5  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
         LCDDR10 = ( LCDDR10 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
         LCDDR15 = ( LCDDR15 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
     }
     else if (pos == 2 || pos == 3) {
-        LCDDR1  = ( LCDDR1  & (0xF0 >> offset) ) | (segmentMap[0] << offset);
+        LCDDR1  = ( LCDDR1  & (0x6F6 >> offset) ) | (segmentMap[0] << offset);
         LCDDR6  = ( LCDDR6  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
         LCDDR11 = ( LCDDR11 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
         LCDDR16 = ( LCDDR16 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
     }
     else if (pos == 4 || pos == 5) {
-        LCDDR2  = ( LCDDR2  & (0xF0 >> offset) ) | (segmentMap[0] << offset);
+        LCDDR2  = ( LCDDR2  & (0x6F6 >> offset) ) | (segmentMap[0] << offset);
         LCDDR7  = ( LCDDR7  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
         LCDDR12 = ( LCDDR12 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
         LCDDR17 = ( LCDDR17 & (0xF0 >> offset) ) | (segmentMap[3] << offset);

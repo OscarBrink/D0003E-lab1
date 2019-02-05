@@ -2,9 +2,11 @@
 #include <stdint.h>
 #include "primes.h"
 #include "blink.h"
+#include "button.h"
 
 // Function Prototypes
 void initLCD(void);
+void runAll(void);
 
 int main(void) {
 
@@ -20,18 +22,59 @@ int main(void) {
     
 
     /* Part 2 */
-    blink();
+    //blink();
 
 
     /* Part 3 */
+    //button();
 
-    //while (1) {
-    //    writeLong((long) getTCNT1());
-    //}
+    /* Part 4 */
+    runAll();
 
 
     return 0;
 }
+
+
+void runAll(void) {
+
+    initClk();
+    initIO();
+
+    uint16_t blink_state = 0;
+    LCDDR0 = (LCDDR0 & 0xFF) | 0x40; // init blink state
+
+    uint8_t button_state = ( PINB & (1<<PINB7) ); // init button state
+    LCDDR1 = 0x20; // init button event
+
+    long p = 2; // initial prime
+
+    while (1) {
+        /* Check if time to change blink state */
+        if (!blink_state && TCNT1 >= 0x7FFF) {
+            LCDDR0 = (LCDDR0 & 0xBF);
+            blink_state = 1;
+        }
+        else if (blink_state && TCNT1 < 0x7FFF) {
+            LCDDR0 = (LCDDR0 & 0xFF) | 0x40;
+            blink_state = 0;
+        }
+
+        /* Check if input has happened */
+        uint16_t new_button_state = (PINB & (1<<PINB7));
+        if (button_state != new_button_state) {
+            button_state = new_button_state;
+            LCDDR1 = (LCDDR1 ^ 0x60);
+        }
+
+        /* Check next number */
+        if (isPrime(p)) {
+            writeLong(p);
+        }
+        p++;
+    }
+}
+
 
 
 void initLCD(void) {
