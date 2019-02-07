@@ -15,7 +15,7 @@ uint16_t primes(void) {
 
 uint16_t isPrime(long i) {
 
-    if (i == 2) {
+    if (i == 2 || i == 1) {
         return 1;
     }
 
@@ -32,6 +32,7 @@ uint16_t writeLong(long i) {
 
     uint16_t pos = 5; // Write LSD first
 
+
     if (i == 0) {
         if (writeChar('0', pos)) {
             return 1;
@@ -45,7 +46,41 @@ uint16_t writeLong(long i) {
         }
     }
 
+    // Clear rest of char-spaces.
+    for (; pos > 0; pos--) {
+        clearChar(pos);
+    }
+
     return 0;
+}
+
+void clearChar(int pos) {
+    uint16_t offset = ( (pos & 1) == 1 ? 4 : 0); // Odd numbers on upper nibble
+
+    if (pos == 0 || pos == 1) {
+        LCDDR0  = (LCDDR0  & 0x60) << offset;
+        LCDDR5  = (LCDDR5  & 0x00) << offset;
+        LCDDR10 = (LCDDR10 & 0x00) << offset;
+        LCDDR15 = (LCDDR15 & 0x00) << offset;
+    }
+    else if (pos == 2 || pos == 3) {
+        LCDDR1  = (LCDDR1  & 0x60) << offset;
+        LCDDR6  = (LCDDR6  & 0x00) << offset;
+        LCDDR11 = (LCDDR11 & 0x00) << offset;
+        LCDDR16 = (LCDDR16 & 0x00) << offset;
+    }
+    else if (pos == 4 || pos == 5) {
+        LCDDR2  = (LCDDR2  & 0x60) << offset;
+        LCDDR7  = (LCDDR7  & 0x00) << offset;
+        LCDDR12 = (LCDDR12 & 0x00) << offset;
+        LCDDR17 = (LCDDR17 & 0x00) << offset;
+    }
+
+    /* Other segments */
+//  LCDDR3  = (LCDDR5 & 0x00);
+//  LCDDR8  = (LCDDR6 & 0x00);
+//  LCDDR13 = (LCDDR7 & 0x00);
+//  LCDDR18 = (LCDDR7 & 0x00);
 }
 
 uint16_t writeChar(char ch, int pos) {
@@ -71,21 +106,21 @@ uint16_t writeChar(char ch, int pos) {
      */
     if (pos == 0 || pos == 1) {
         LCDDR0  = ( LCDDR0  & (0x6F6 >> offset) ) | (segmentMap[0] << offset);
-        LCDDR5  = ( LCDDR5  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
-        LCDDR10 = ( LCDDR10 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
-        LCDDR15 = ( LCDDR15 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
+        LCDDR5  = ( LCDDR5  & (0xF0  >> offset) ) | (segmentMap[1] << offset);
+        LCDDR10 = ( LCDDR10 & (0xF0  >> offset) ) | (segmentMap[2] << offset);
+        LCDDR15 = ( LCDDR15 & (0xF0  >> offset) ) | (segmentMap[3] << offset);
     }
     else if (pos == 2 || pos == 3) {
         LCDDR1  = ( LCDDR1  & (0x6F6 >> offset) ) | (segmentMap[0] << offset);
-        LCDDR6  = ( LCDDR6  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
-        LCDDR11 = ( LCDDR11 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
-        LCDDR16 = ( LCDDR16 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
+        LCDDR6  = ( LCDDR6  & (0xF0  >> offset) ) | (segmentMap[1] << offset);
+        LCDDR11 = ( LCDDR11 & (0xF0  >> offset) ) | (segmentMap[2] << offset);
+        LCDDR16 = ( LCDDR16 & (0xF0  >> offset) ) | (segmentMap[3] << offset);
     }
     else if (pos == 4 || pos == 5) {
         LCDDR2  = ( LCDDR2  & (0x6F6 >> offset) ) | (segmentMap[0] << offset);
-        LCDDR7  = ( LCDDR7  & (0xF0 >> offset) ) | (segmentMap[1] << offset);
-        LCDDR12 = ( LCDDR12 & (0xF0 >> offset) ) | (segmentMap[2] << offset);
-        LCDDR17 = ( LCDDR17 & (0xF0 >> offset) ) | (segmentMap[3] << offset);
+        LCDDR7  = ( LCDDR7  & (0xF0  >> offset) ) | (segmentMap[1] << offset);
+        LCDDR12 = ( LCDDR12 & (0xF0  >> offset) ) | (segmentMap[2] << offset);
+        LCDDR17 = ( LCDDR17 & (0xF0  >> offset) ) | (segmentMap[3] << offset);
     }
 
     return 0;

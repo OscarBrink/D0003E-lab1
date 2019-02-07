@@ -7,8 +7,8 @@
 // Function Prototypes
 void initLCD(void);
 void runAll(uint16_t primeStart);
-void changeBlink(uint16_t *blink_state);
-void changeButton(uint8_t *button_state);
+void changeBlink(uint16_t *blinkState);
+void changeButton(uint8_t *buttonState);
 
 
 int main(void) {
@@ -25,7 +25,7 @@ int main(void) {
     
 
     /* Part 2 */
-    //blink();
+    blink();
 
 
     /* Part 3 */
@@ -33,7 +33,7 @@ int main(void) {
 
 
     /* Part 4 */
-    //runAll(50000);
+    //runAll(1);
 
 
     return 0;
@@ -45,19 +45,19 @@ void runAll(uint16_t primeStart) {
     initClk();
     initIO();
 
-    uint16_t blink_state = 0;
+    uint16_t blinkState = 0;
     LCDDR0 = (LCDDR0 & 0xFF) | 0x40; // init blink state
 
-    uint8_t button_state = ( PINB & (1<<PINB7) ); // init button state
+    uint8_t buttonState = 0; // init button state
     LCDDR1 = 0x20; // init button event
 
     long p = primeStart; // initial prime
 
     while (1) {
 
-        changeBlink(&blink_state);
+        changeBlink(&blinkState);
 
-        changeButton(&button_state);
+        changeButton(&buttonState);
 
         /* Check next number */
         if (isPrime(p)) {
@@ -67,26 +67,29 @@ void runAll(uint16_t primeStart) {
     }
 }
 
-
 /* Check if time to change blink state */
-void changeBlink(uint16_t *blink_state) {
-    if (!(*blink_state) && TCNT1 >= 0x7FFF) {
+void changeBlink(uint16_t *blinkState) {
+
+    if (!(*blinkState) && TCNT1 >= 0x7FFF) {
         LCDDR0 = (LCDDR0 & 0xBF);
-        (*blink_state) = 1;
+        (*blinkState) = 1;
     }
-    else if ((*blink_state) && TCNT1 < 0x7FFF) {
+    else if ((*blinkState) && TCNT1 < 0x7FFF) {
         LCDDR0 = (LCDDR0 & 0xFF) | 0x40;
-        (*blink_state) = 0;
+        (*blinkState) = 0;
     }
 }
 
 
 /* Check if input has happened */
-void changeButton(uint8_t *button_state) {
-    uint8_t new_button_state = (PINB & (1<<PINB7));
-    if ((*button_state) != new_button_state) {
-        (*button_state) = new_button_state;
+void changeButton(uint8_t *buttonState) {
+
+    if ( !(PINB & (1<<PINB7)) && !(*buttonState) ) {
         LCDDR1 = (LCDDR1 ^ 0x60);
+        (*buttonState) = 1;
+    } 
+    else if ( PINB & (1<<PINB7) ) {
+        (*buttonState) = 0;
     }
 }
 

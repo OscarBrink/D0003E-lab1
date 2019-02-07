@@ -1,20 +1,21 @@
 #include "button.h"
+#include "primes.h"
 
 
 uint16_t button(void) {
 
     LCDDR1 = 0x20; // Set initial state
-    
+
     initIO();
 
-    uint8_t current = ( PINB & (1<<PINB7) );
-
     while (1) {
-        while (current == ( PINB & (1<<PINB7) )) {
+        while (PINB & (1<<PINB7)) {
             // busy wait
         }
-        current = ( PINB & (1<<PINB7) );
         changeState();
+        while ( !(PINB & (1<<PINB7)) ) {
+            // busy wait
+        }
     }
 
     return 0;
@@ -26,6 +27,7 @@ void changeState(void) {
 
 
 void initIO(void) {
+    // "Activate" down input from joystick (bit 7 in PORTB)
     PORTB = (1<<PB7);
 }
 
