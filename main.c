@@ -7,7 +7,7 @@
 // Function Prototypes
 void initLCD(void);
 void runAll(uint16_t primeStart);
-void changeBlink(uint16_t *blinkState);
+void changeBlink(uint16_t *blinkState, uint16_t *nextStateChange);
 void changeButton(uint8_t *buttonState);
 
 
@@ -25,7 +25,7 @@ int main(void) {
     
 
     /* Part 2 */
-    blink();
+    //blink();
 
 
     /* Part 3 */
@@ -33,7 +33,7 @@ int main(void) {
 
 
     /* Part 4 */
-    //runAll(1);
+    runAll(3000);
 
 
     return 0;
@@ -46,7 +46,8 @@ void runAll(uint16_t primeStart) {
     initIO();
 
     uint16_t blinkState = 0;
-    LCDDR0 = (LCDDR0 & 0xFF) | 0x40; // init blink state
+    uint16_t nextStateChange = CLKPERIOD;
+    LCDDR0 |= 0x40; // init blink state
 
     uint8_t buttonState = 0; // init button state
     LCDDR1 = 0x20; // init button event
@@ -55,9 +56,10 @@ void runAll(uint16_t primeStart) {
 
     while (1) {
 
-        changeBlink(&blinkState);
+        changeBlink(&blinkState, &nextStateChange);
 
         changeButton(&buttonState);
+
 
         /* Check next number */
         if (isPrime(p)) {
@@ -68,14 +70,17 @@ void runAll(uint16_t primeStart) {
 }
 
 /* Check if time to change blink state */
-void changeBlink(uint16_t *blinkState) {
+void changeBlink(uint16_t *blinkState, uint16_t *nextStateChange) {
 
-    if (!(*blinkState) && TCNT1 >= 0x7FFF) {
-        LCDDR0 = (LCDDR0 & 0xBF);
-        (*blinkState) = 1;
+    if ( TCNT1 >= (*nextStateChange) && !(*blinkState) ) {
+        LCDDR0 ^= 0x40; // Flip the bit
+        (*nextStateChange) += CLKPERIOD;
+
+        if ( TCNT1 >= (*nextStateChange) ) { // If wraparound is about to happen
+            (*blinkState) = 1;
+        }
     }
-    else if ((*blinkState) && TCNT1 < 0x7FFF) {
-        LCDDR0 = (LCDDR0 & 0xFF) | 0x40;
+    else if ( TCNT1 < (*nextStateChange) && (*blinkState) ) {
         (*blinkState) = 0;
     }
 }

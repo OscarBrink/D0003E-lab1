@@ -9,13 +9,9 @@ uint16_t button(void) {
     initIO();
 
     while (1) {
-        while (PINB & (1<<PINB7)) {
-            // busy wait
-        }
+        while (PINB & (1<<PINB7)); // busy wait until input
         changeState();
-        while ( !(PINB & (1<<PINB7)) ) {
-            // busy wait
-        }
+        while ( !(PINB & (1<<PINB7)) ); // busy wait until joystick is released
     }
 
     return 0;
